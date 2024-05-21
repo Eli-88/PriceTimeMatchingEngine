@@ -4,8 +4,10 @@
 #include <cstdint>
 #include <iostream>
 #include <span>
+#include <thread>
 #include "engine.h"
 #include "server.h"
+#include "trade_observer.h"
 
 static void PinCurrentThreadToCore() {
   const int core_id = sched_getcpu();
@@ -38,60 +40,43 @@ int main(int, char**) {
 
   Engine engine;
 
-  TcpSocket trade_observer;
+  TradeObserver trade_observer("127.0.0.1", 8765);
 
-  std::cout << "connecting to trade observer" << std::endl;
+  Server server("127.0.0.1", 5678,
+                [&engine, &trade_observer](std::span<const uint8_t> buffer) {
+                  assert(buffer.size() >= sizeof(Order));
+                  assert(buffer.size() % sizeof(Order) == 0);
 
-  if (!trade_observer.Connect("127.0.0.1", 8765)) {
-    std::cout << "unable to connect" << std::endl;
-    exit(-1);
-  }
+                  union {
+                    const uint8_t* raw;
+                    const Order* order;
+                    const BuyOrder* buy_order;
+                    const SellOrder* sell_order;
+                  } msg;
 
-  std::cout << "connected" << std::endl;
+                  msg.raw = buffer.data();
+                  int msg_count = buffer.size() / sizeof(Order);
 
-  Server server(
-      "127.0.0.1", 5678,
-      [&engine, &trade_observer](std::span<const uint8_t> buffer) {
-        assert(buffer.size() >= sizeof(Order));
-        assert(buffer.size() % sizeof(Order) == 0);
+                  for (int i = 0; i < msg_count; ++i) {
+                    switch (msg.order[i].OrderType()) {
+                      case kBuy:
+                        engine.AddOrder(msg.buy_order[i]);
+                        break;
+                      case kSell:
+                        engine.AddOrder(msg.sell_order[i]);
+                        break;
+                      [[unlikely]] default:
+                        break;
+                    }
+                    const std::vector<TradeResult> trade_results =
+                        engine.Execute();
 
-        union {
-          const uint8_t* raw;
-          const Order* order;
-          const BuyOrder* buy_order;
-          const SellOrder* sell_order;
-        } msg;
+                    if (!trade_results.empty()) {
+                      trade_observer.Send(trade_results);
+                    }
+                  }
+                });
 
-        msg.raw = buffer.data();
-        int msg_count = buffer.size() / sizeof(Order);
-
-        for (int i = 0; i < msg_count; ++i) {
-          switch (msg.order[i].OrderType()) {
-            case kBuy:
-              engine.AddOrder(msg.buy_order[i]);
-              break;
-            case kSell:
-              engine.AddOrder(msg.sell_order[i]);
-              break;
-            [[unlikely]] default:
-              break;
-          }
-
-          const std::vector<TradeResult> trade_results = engine.Execute();
-
-          if (!trade_results.empty()) {
-            union {
-              const TradeResult* result;
-              const uint8_t* buffer;
-            } send;
-
-            send.result = trade_results.data();
-
-            trade_observer.Send(
-                {send.buffer, sizeof(TradeResult) * trade_results.size()});
-          }
-        }
-      });
-
+  std::jthread observer_thread([&trade_observer]() { trade_observer.Run(); });
   server.Run();
 }

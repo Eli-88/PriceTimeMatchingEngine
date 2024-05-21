@@ -9,7 +9,8 @@ set(SRC
     engine.cpp
     memory_lock.cpp
     tcp.cpp
-    server.cpp)
+    server.cpp
+    trade_observer.cpp)
 
 include_directories(.)
 
