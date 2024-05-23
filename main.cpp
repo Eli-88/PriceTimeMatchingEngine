@@ -6,6 +6,7 @@
 #include <span>
 #include <thread>
 #include "engine.h"
+#include "order_handler.h"
 #include "server.h"
 #include "trade_observer.h"
 
@@ -42,40 +43,7 @@ int main(int, char**) {
 
   TradeObserver trade_observer("127.0.0.1", 8765);
 
-  Server server("127.0.0.1", 5678,
-                [&engine, &trade_observer](std::span<const uint8_t> buffer) {
-                  assert(buffer.size() >= sizeof(Order));
-                  assert(buffer.size() % sizeof(Order) == 0);
-
-                  union {
-                    const uint8_t* raw;
-                    const Order* order;
-                    const BuyOrder* buy_order;
-                    const SellOrder* sell_order;
-                  } msg;
-
-                  msg.raw = buffer.data();
-                  int msg_count = buffer.size() / sizeof(Order);
-
-                  for (int i = 0; i < msg_count; ++i) {
-                    switch (msg.order[i].OrderType()) {
-                      case kBuy:
-                        engine.AddOrder(msg.buy_order[i]);
-                        break;
-                      case kSell:
-                        engine.AddOrder(msg.sell_order[i]);
-                        break;
-                      [[unlikely]] default:
-                        break;
-                    }
-                    const std::vector<TradeResult> trade_results =
-                        engine.Execute();
-
-                    if (!trade_results.empty()) {
-                      trade_observer.Send(trade_results);
-                    }
-                  }
-                });
+  Server server("127.0.0.1", 5678, OrderHandler{engine, trade_observer});
 
   std::jthread observer_thread([&trade_observer]() { trade_observer.Run(); });
   server.Run();

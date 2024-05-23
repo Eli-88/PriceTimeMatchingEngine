@@ -15,8 +15,12 @@ TradeObserver::TradeObserver(std::string_view host,
   std::cout << "connected" << std::endl;
 }
 
-void TradeObserver::Send(std::span<const TradeResult> results) {
+bool TradeObserver::Send(std::span<const TradeResult> results) {
   while (m_flag_.test_and_set(std::memory_order_relaxed)) {
+    if (results.size() + m_count_ > m_queue_.size()) [[unlikely]] {
+      return false;
+    }
+
     assert(results.size() + m_count_ <= m_queue_.size());
 
     std::ranges::copy(std::begin(results), std::end(results),
@@ -24,7 +28,11 @@ void TradeObserver::Send(std::span<const TradeResult> results) {
 
     m_count_ += results.size();
     m_flag_.clear();
+
+    break;
   }
+
+  return true;
 }
 
 void TradeObserver::Run() {

@@ -16,7 +16,7 @@ class TradeObserver {
   TradeObserver(const TradeObserver&) = delete;
   TradeObserver& operator=(const TradeObserver&) = delete;
 
-  void Send(std::span<const TradeResult> results);
+  bool Send(std::span<const TradeResult> results);
   void Run();
 
  private:
