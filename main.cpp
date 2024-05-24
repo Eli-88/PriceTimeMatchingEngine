@@ -31,7 +31,6 @@ void SignalSetup() {
   action.sa_handler = handler;
 
   sigaction(SIGINT, &action, nullptr);
-  sigaction(SIGPIPE, &action, nullptr);
 }
 
 int main(int, char**) {

@@ -73,7 +73,7 @@ int TcpSocket::Recv(std::span<uint8_t> buffer) {
 }
 
 int TcpSocket::Send(std::span<const uint8_t> buffer) {
-  return ::send(m_fd_, buffer.data(), buffer.size(), 0);
+  return ::send(m_fd_, buffer.data(), buffer.size(), MSG_NOSIGNAL);
 }
 
 void TcpSocket::Close() {
