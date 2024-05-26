@@ -8,11 +8,11 @@ TradeObserver::TradeObserver(std::string_view host,
                              uint16_t port,
                              uint32_t queue_size)
     : m_queue_(queue_size) {
-  std::cout << "connecting to trade observer" << std::endl;
+  std::cout << "connecting to trade observer" << '\n';
   if (!m_client_sock_.Connect(host, port)) {
     throw std::runtime_error("unable to connect to trade observer");
   }
-  std::cout << "connected" << std::endl;
+  std::cout << "connected" << '\n';
 }
 
 bool TradeObserver::Send(std::span<const TradeResult> results) {

@@ -34,7 +34,7 @@ Engine::Engine(EngineOptions options)
  */
 void Engine::AddOrder(BuyOrder order) {
   if (m_buy_count_ == m_buy_price_caches_.size()) [[unlikely]] {
-    std::cout << "exceeded buy order limit" << std::endl;
+    std::cout << "exceeded buy order limit" << '\n';
     return;
   }
 
@@ -76,7 +76,7 @@ void Engine::AddOrder(BuyOrder order) {
 
 void Engine::AddOrder(SellOrder order) {
   if (m_sell_count_ == m_sell_price_caches_.size()) [[unlikely]] {
-    std::cout << "exceeded sell order limit" << std::endl;
+    std::cout << "exceeded sell order limit" << '\n';
     return;
   }
 

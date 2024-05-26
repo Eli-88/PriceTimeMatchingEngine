@@ -24,7 +24,7 @@ void SignalSetup() {
   std::memset(&action, 0, sizeof(action));
 
   auto handler = +[](int num) {
-    std::cout << "Interrupt Signal: " << strsignal(num) << std::endl;
+    std::cout << "Interrupt Signal: " << strsignal(num) << '\n';
     exit(num);
   };
 

@@ -51,7 +51,7 @@ void generate_order(const char* file_path,
     ++index;
   }
 
-  std::cout << "finish loading!" << std::endl;
+  std::cout << "finish loading!" << '\n';
   file.close();
 
   TcpSocket conn;
@@ -60,11 +60,11 @@ void generate_order(const char* file_path,
 
   bool success = conn.Connect("127.0.0.1", 5678);
   if (!success) {
-    std::cerr << "unable to connect" << std::endl;
+    std::cerr << "unable to connect" << '\n';
     exit(-1);
   }
 
-  std::cout << "sending orders to matching engine..." << index << std::endl;
+  std::cout << "sending orders to matching engine..." << index << '\n';
 
   conn.Send({buf.data, index * sizeof(Order)});
 }
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
   const char* file_path = argv[1];
   uint64_t max_order = std::stoul(argv[2]);
 
-  std::cout << "max order: " << max_order << std::endl;
+  std::cout << "max order: " << max_order << '\n';
 
   std::vector<uint8_t> buffer;
   buffer.resize(max_order * sizeof(Order));
