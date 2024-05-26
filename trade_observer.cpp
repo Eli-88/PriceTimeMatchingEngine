@@ -24,8 +24,6 @@ bool TradeObserver::Send(std::span<const TradeResult> results) {
     return false;
   }
 
-  assert(results.size() + m_count_ <= m_queue_.size());
-
   std::ranges::copy(std::begin(results), std::end(results),
                     std::begin(m_queue_) + m_count_);
 
