@@ -17,21 +17,20 @@ TradeObserver::TradeObserver(std::string_view host,
 
 bool TradeObserver::Send(std::span<const TradeResult> results) {
   while (m_flag_.test_and_set(std::memory_order_relaxed)) {
-    if (results.size() + m_count_ > m_queue_.size()) [[unlikely]] {
-      m_flag_.clear();
-      return false;
-    }
-
-    assert(results.size() + m_count_ <= m_queue_.size());
-
-    std::ranges::copy(std::begin(results), std::end(results),
-                      std::begin(m_queue_) + m_count_);
-
-    m_count_ += results.size();
-    m_flag_.clear();
-
-    break;
   }
+
+  if (results.size() + m_count_ > m_queue_.size()) [[unlikely]] {
+    m_flag_.clear();
+    return false;
+  }
+
+  assert(results.size() + m_count_ <= m_queue_.size());
+
+  std::ranges::copy(std::begin(results), std::end(results),
+                    std::begin(m_queue_) + m_count_);
+
+  m_count_ += results.size();
+  m_flag_.clear();
 
   return true;
 }
