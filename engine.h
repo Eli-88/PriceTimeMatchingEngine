@@ -25,20 +25,22 @@ class Engine {
 
   Engine(const Engine&) = delete;
   Engine& operator=(const Engine&) = delete;
-  void AddOrder(BuyOrder order);
-  void AddOrder(SellOrder order);
+  void AddOrder(BuyOrder order) noexcept;
+  void AddOrder(SellOrder order) noexcept;
 
-  std::vector<TradeResult> Execute();
+  std::vector<TradeResult> Execute() noexcept;
 
  private:
-  void InsertBuyOrderAt(uint32_t index, Price_t price, Engine::ColdCache item) {
+  void InsertBuyOrderAt(uint32_t index,
+                        Price_t price,
+                        Engine::ColdCache item) noexcept {
     m_buy_price_caches_[index] = price;
     m_buy_item_caches_[index] = item;
   }
 
   void InsertSellOrderAt(uint32_t index,
                          Price_t price,
-                         Engine::ColdCache item) {
+                         Engine::ColdCache item) noexcept {
     m_sell_price_caches_[index] = price;
     m_sell_item_caches_[index] = item;
   }
@@ -46,7 +48,7 @@ class Engine {
   void ShiftRightByOneAt(uint32_t index,
                          uint32_t len,
                          auto&& price_slice,
-                         auto&& item_slice) {
+                         auto&& item_slice) noexcept {
     std::memmove(price_slice.data() + index + 1, price_slice.data() + index,
                  len * sizeof(Price_t));
 

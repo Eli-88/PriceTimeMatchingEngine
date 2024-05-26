@@ -15,7 +15,7 @@ TradeObserver::TradeObserver(std::string_view host,
   std::cout << "connected" << '\n';
 }
 
-bool TradeObserver::Send(std::span<const TradeResult> results) {
+bool TradeObserver::Send(std::span<const TradeResult> results) noexcept {
   while (m_flag_.test_and_set(std::memory_order_relaxed)) {
   }
 

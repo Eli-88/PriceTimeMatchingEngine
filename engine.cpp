@@ -32,7 +32,7 @@ Engine::Engine(EngineOptions options)
  * 1 lower bound search for the price slot index
  * 2 shift all the elements at the index by 1
  */
-void Engine::AddOrder(BuyOrder order) {
+void Engine::AddOrder(BuyOrder order) noexcept {
   if (m_buy_count_ == m_buy_price_caches_.size()) [[unlikely]] {
     std::cout << "exceeded buy order limit" << '\n';
     return;
@@ -74,7 +74,7 @@ void Engine::AddOrder(BuyOrder order) {
   InsertBuyOrderAt(index, current_price, current_item);
 }
 
-void Engine::AddOrder(SellOrder order) {
+void Engine::AddOrder(SellOrder order) noexcept {
   if (m_sell_count_ == m_sell_price_caches_.size()) [[unlikely]] {
     std::cout << "exceeded sell order limit" << '\n';
     return;
@@ -117,7 +117,7 @@ void Engine::AddOrder(SellOrder order) {
   InsertSellOrderAt(index, current_price, current_item);
 }
 
-std::vector<TradeResult> Engine::Execute() {
+std::vector<TradeResult> Engine::Execute() noexcept {
   std::vector<TradeResult> result;
 
   int64_t s_i = static_cast<int64_t>(m_sell_count_) - 1;
