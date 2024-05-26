@@ -43,17 +43,18 @@ void TradeObserver::Run() {
 
   while (1) {
     while (m_flag_.test_and_set(std::memory_order_relaxed)) {
-      if (m_count_ > 0) {
-        const int byte_sent =
-            m_client_sock_.Send({msg.buffer, sizeof(TradeResult) * m_count_});
-
-        if (byte_sent <= 0) {
-          throw std::runtime_error("unable to send to trade observer");
-        }
-        m_count_ = 0;
-      }
-
-      m_flag_.clear();
     }
+
+    if (m_count_ > 0) {
+      const int byte_sent =
+          m_client_sock_.Send({msg.buffer, sizeof(TradeResult) * m_count_});
+
+      if (byte_sent <= 0) {
+        throw std::runtime_error("unable to send to trade observer");
+      }
+      m_count_ = 0;
+    }
+
+    m_flag_.clear();
   }
 }
