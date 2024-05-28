@@ -10,7 +10,8 @@ set(SRC
     memory_lock.cpp
     tcp.cpp
     server.cpp
-    trade_observer.cpp)
+    trade_observer.cpp
+    heap_based_engine.cpp)
 
 include_directories(.)
 
@@ -26,13 +27,17 @@ add_executable(test_matching_engine
 target_sources(test_matching_engine PRIVATE
     ${SRC}
     tests/test_engine.cpp
-    tests/test_order_handler.cpp)
+    tests/test_order_handler.cpp
+    tests/test_heap_base_engine.cpp)
+
+target_compile_options(test_matching_engine PRIVATE -fsanitize=address -fno-omit-frame-pointer)
 
 target_link_libraries(test_matching_engine PRIVATE
     gtest
     gtest_main
     gmock
-    gmock_main)
+    gmock_main
+    asan)
 
 enable_testing()
 

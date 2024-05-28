@@ -19,8 +19,7 @@ class Engine {
   } __attribute__((packed, aligned(1)));
 
  public:
-  Engine(EngineOptions options = {.MaxOrderLimit = 1 << 18,
-                                  .MaxOrderMemLockLen = 1 << 18});
+  Engine(EngineOptions options = {.MaxOrderLimit = 1 << 18});
   virtual ~Engine() = default;
 
   Engine(const Engine&) = delete;
@@ -31,24 +30,27 @@ class Engine {
   std::vector<TradeResult> Execute() noexcept;
 
  private:
-  void InsertBuyOrderAt(uint32_t index,
-                        Price_t price,
-                        Engine::ColdCache item) noexcept {
+  __attribute__((always_inline)) void InsertBuyOrderAt(
+      uint32_t index,
+      Price_t price,
+      Engine::ColdCache item) noexcept {
     m_buy_price_caches_[index] = price;
     m_buy_item_caches_[index] = item;
   }
 
-  void InsertSellOrderAt(uint32_t index,
-                         Price_t price,
-                         Engine::ColdCache item) noexcept {
+  __attribute__((always_inline)) void InsertSellOrderAt(
+      uint32_t index,
+      Price_t price,
+      Engine::ColdCache item) noexcept {
     m_sell_price_caches_[index] = price;
     m_sell_item_caches_[index] = item;
   }
 
-  void ShiftRightByOneAt(uint32_t index,
-                         uint32_t len,
-                         auto&& price_slice,
-                         auto&& item_slice) noexcept {
+  __attribute__((always_inline)) void ShiftRightByOneAt(
+      uint32_t index,
+      uint32_t len,
+      auto&& price_slice,
+      auto&& item_slice) noexcept {
     std::memmove(price_slice.data() + index + 1, price_slice.data() + index,
                  len * sizeof(Price_t));
 

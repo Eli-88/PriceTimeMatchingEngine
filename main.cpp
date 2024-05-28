@@ -6,6 +6,7 @@
 #include <span>
 #include <thread>
 #include "engine.h"
+#include "heap_based_engine.h"
 #include "order_handler.h"
 #include "server.h"
 #include "trade_observer.h"
@@ -38,7 +39,7 @@ int main(int, char**) {
 
   PinCurrentThreadToCore();
 
-  Engine engine;
+  HeapBasedEngine engine;
 
   TradeObserver trade_observer("127.0.0.1", 8765);
 
