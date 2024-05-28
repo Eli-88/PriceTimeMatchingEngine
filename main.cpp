@@ -45,6 +45,9 @@ int main(int, char**) {
 
   Server server("127.0.0.1", 5678, OrderHandler{engine, trade_observer});
 
-  std::jthread observer_thread([&trade_observer]() { trade_observer.Run(); });
+  std::jthread observer_thread([&trade_observer]() {
+    PinCurrentThreadToCore();
+    trade_observer.Run();
+  });
   server.Run();
 }
