@@ -41,6 +41,11 @@ HeapBasedEngine::HeapBasedEngine(EngineOptions opts)
 }
 
 void HeapBasedEngine::AddOrder(BuyOrder order) noexcept {
+  if (m_buy_price_count_ == m_buy_price_caches_.size()) [[unlikely]] {
+    std::cout << "exceeded buy order limit" << '\n';
+    return;
+  }
+
   Key& cache = m_buy_price_caches_[m_buy_price_count_++];
 
   cache.Price = order.Price();
@@ -62,6 +67,11 @@ void HeapBasedEngine::AddOrder(BuyOrder order) noexcept {
 }
 
 void HeapBasedEngine::AddOrder(SellOrder order) noexcept {
+  if (m_sell_price_count_ == m_sell_price_caches_.size()) [[unlikely]] {
+    std::cout << "exceeded sell order limit" << '\n';
+    return;
+  }
+
   Key& cache = m_sell_price_caches_[m_sell_price_count_++];
 
   cache.Price = order.Price();
