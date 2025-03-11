@@ -16,6 +16,7 @@ target_compile_options(matching_engine_lib PRIVATE -Wall -Werror)
 
 add_executable(matching_engine main.cpp)
 target_link_libraries(matching_engine PRIVATE matching_engine_lib)
+target_compile_options(matching_engine PRIVATE -Werror=frame-larger-than=1048576)
 
 add_executable(data_generator data_generator.cpp)
 target_sources(data_generator PRIVATE ${SRC})
