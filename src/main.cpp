@@ -7,6 +7,7 @@
 #include <thread>
 #include "engine.h"
 #include "heap_based_engine.h"
+#include "linux/memory_map.h"
 #include "order_handler.h"
 #include "server.h"
 #include "trade_observer.h"
@@ -39,11 +40,13 @@ int main(int, char**) {
 
   PinCurrentThreadToCore();
 
-  HeapBasedEngine engine;
+  Mmap<uint8_t> allocated_memory(sizeof(HeapBasedEngine));
+  HeapBasedEngine* engine =
+      reinterpret_cast<HeapBasedEngine*>(allocated_memory.Address());
 
   TradeObserver trade_observer("127.0.0.1", 8765);
 
-  Server server("127.0.0.1", 5678, OrderHandler{engine, trade_observer});
+  Server server("127.0.0.1", 5678, OrderHandler{*engine, trade_observer});
 
   std::jthread observer_thread([&trade_observer]() {
     PinCurrentThreadToCore();

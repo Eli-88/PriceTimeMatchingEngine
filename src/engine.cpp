@@ -1,16 +1,12 @@
 #include "engine.h"
 #include <algorithm>
 #include <cstring>
+#include <iostream>
 #include <ranges>
 
-Engine::Engine(EngineOptions options)
-    : kMaxOrders{options.MaxOrderLimit},
-      m_allocator_(options.MaxOrderLimit * sizeof(Price_t) * 2 +
-                   options.MaxOrderLimit * sizeof(ColdCache) * 2),
-      m_buy_count_{0},
-      m_sell_count_{0} {
-  m_buy_price_caches_ = std::span<Price_t>(
-      reinterpret_cast<Price_t*>(m_allocator_.Address()), kMaxOrders);
+Engine::Engine() : m_buy_count_{0}, m_sell_count_{0} {
+  m_buy_price_caches_ =
+      std::span<Price_t>(reinterpret_cast<Price_t*>(m_caches_), kMaxOrders);
 
   m_buy_item_caches_ = std::span<ColdCache>(
       reinterpret_cast<ColdCache*>(m_buy_price_caches_.data() +

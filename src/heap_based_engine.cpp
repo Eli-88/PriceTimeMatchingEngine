@@ -1,5 +1,6 @@
 #include "heap_based_engine.h"
 #include <algorithm>
+#include <iostream>
 #include <ranges>
 
 namespace {
@@ -7,13 +8,9 @@ static const auto kBuyComp = std::less{};
 static const auto kSellComp = std::greater{};
 }  // namespace
 
-HeapBasedEngine::HeapBasedEngine(EngineOptions opts)
-    : kMaxOrders{opts.MaxOrderLimit},
-      m_allocator_(opts.MaxOrderLimit * sizeof(Item) * 2),
-      m_buy_count_{0},
-      m_sell_count_{0} {
-  m_buy_caches_ = std::span<Item>(
-      reinterpret_cast<Item*>(m_allocator_.Address()), kMaxOrders);
+HeapBasedEngine::HeapBasedEngine() : m_buy_count_{0}, m_sell_count_{0} {
+  m_buy_caches_ =
+      std::span<Item>(reinterpret_cast<Item*>(m_caches_), kMaxOrders);
 
   std::ranges::fill(std::begin(m_buy_caches_), std::end(m_buy_caches_), Item{});
 

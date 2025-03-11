@@ -5,7 +5,6 @@
 #include <span>
 #include "define.h"
 #include "engine_options.h"
-#include "linux/memory_map.h"
 #include "order_handler.h"
 
 class HeapBasedEngine {
@@ -34,8 +33,10 @@ class HeapBasedEngine {
     }
   } __attribute__((packed, aligned(1)));
 
+  static const uint32_t kMaxOrders = 1 << 18;
+
  public:
-  HeapBasedEngine(EngineOptions options = {.MaxOrderLimit = 1 << 18});
+  HeapBasedEngine();
 
   void AddOrder(BuyOrder order) noexcept;
   void AddOrder(SellOrder order) noexcept;
@@ -43,8 +44,7 @@ class HeapBasedEngine {
   std::vector<TradeResult> Execute() noexcept;
 
  private:
-  const uint32_t kMaxOrders;
-  Mmap<uint8_t> m_allocator_;
+  uint8_t m_caches_[kMaxOrders * sizeof(Item) * 2];
 
   std::span<HeapBasedEngine::Item> m_buy_caches_;
   uint32_t m_buy_count_{0};

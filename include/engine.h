@@ -7,7 +7,6 @@
 #include <vector>
 #include "define.h"
 #include "engine_options.h"
-#include "linux/memory_map.h"
 #include "order.h"
 #include "trade_result.h"
 
@@ -18,8 +17,10 @@ class Engine {
     Quantity_t Quantity;
   } __attribute__((packed, aligned(1)));
 
+  static const uint32_t kMaxOrders = 1 << 18;
+
  public:
-  Engine(EngineOptions options = {.MaxOrderLimit = 1 << 18});
+  Engine();
 
   Engine(const Engine&) = delete;
   Engine& operator=(const Engine&) = delete;
@@ -58,8 +59,8 @@ class Engine {
   }
 
  private:
-  const uint32_t kMaxOrders;
-  Mmap<uint8_t> m_allocator_;
+  uint8_t m_caches_[kMaxOrders * sizeof(Price_t) * 2 +
+                    kMaxOrders * sizeof(ColdCache) * 2];
 
   std::span<Price_t> m_buy_price_caches_;
   std::span<Engine::ColdCache> m_buy_item_caches_;

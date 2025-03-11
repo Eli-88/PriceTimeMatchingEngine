@@ -1,20 +1,21 @@
 #include <gtest/gtest.h>
+#include <memory>
 #include "heap_based_engine.h"
 #include "order.h"
 
 TEST(HeapBasedEngineTest, SimpleBuyOrdersAddAndExecute) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{20}, Quantity_t{12}));
-  engine.AddOrder(BuyOrder(ID_t{2}, Price_t{14}, Quantity_t{1}));
-  engine.AddOrder(BuyOrder(ID_t{3}, Price_t{64}, Quantity_t{90}));
-  engine.AddOrder(BuyOrder(ID_t{4}, Price_t{63}, Quantity_t{54}));
-  engine.AddOrder(BuyOrder(ID_t{5}, Price_t{0}, Quantity_t{190}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{20}, Quantity_t{12}));
+  engine->AddOrder(BuyOrder(ID_t{2}, Price_t{14}, Quantity_t{1}));
+  engine->AddOrder(BuyOrder(ID_t{3}, Price_t{64}, Quantity_t{90}));
+  engine->AddOrder(BuyOrder(ID_t{4}, Price_t{63}, Quantity_t{54}));
+  engine->AddOrder(BuyOrder(ID_t{5}, Price_t{0}, Quantity_t{190}));
 
-  engine.AddOrder(SellOrder(ID_t{6}, Price_t{30}, Quantity_t{10}));
-  engine.AddOrder(SellOrder(ID_t{7}, Price_t{40}, Quantity_t{200}));
+  engine->AddOrder(SellOrder(ID_t{6}, Price_t{30}, Quantity_t{10}));
+  engine->AddOrder(SellOrder(ID_t{7}, Price_t{40}, Quantity_t{200}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 3);
 
   EXPECT_EQ(trade_results[0].BuyId, ID_t{3});
@@ -37,15 +38,15 @@ TEST(HeapBasedEngineTest, SimpleBuyOrdersAddAndExecute) {
 }
 
 TEST(HeapBasedEngineTest, BuyOrdersMatchAtEqualPrices) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{20}, Quantity_t{10}));
-  engine.AddOrder(BuyOrder(ID_t{2}, Price_t{20}, Quantity_t{15}));
-  engine.AddOrder(BuyOrder(ID_t{3}, Price_t{20}, Quantity_t{20}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{20}, Quantity_t{10}));
+  engine->AddOrder(BuyOrder(ID_t{2}, Price_t{20}, Quantity_t{15}));
+  engine->AddOrder(BuyOrder(ID_t{3}, Price_t{20}, Quantity_t{20}));
 
-  engine.AddOrder(SellOrder(ID_t{4}, Price_t{20}, Quantity_t{30}));
+  engine->AddOrder(SellOrder(ID_t{4}, Price_t{20}, Quantity_t{30}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 3);
 
   // Ensure buy orders match with the sell order at equal prices
@@ -63,15 +64,15 @@ TEST(HeapBasedEngineTest, BuyOrdersMatchAtEqualPrices) {
 }
 
 TEST(HeapBasedEngineTest, SellOrdersMatchAtEqualPrices) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(SellOrder(ID_t{1}, Price_t{30}, Quantity_t{10}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{15}));
-  engine.AddOrder(SellOrder(ID_t{3}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{1}, Price_t{30}, Quantity_t{10}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{15}));
+  engine->AddOrder(SellOrder(ID_t{3}, Price_t{30}, Quantity_t{20}));
 
-  engine.AddOrder(BuyOrder(ID_t{4}, Price_t{30}, Quantity_t{30}));
+  engine->AddOrder(BuyOrder(ID_t{4}, Price_t{30}, Quantity_t{30}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 3);
 
   // Ensure sell orders match with the buy order at equal prices
@@ -89,12 +90,12 @@ TEST(HeapBasedEngineTest, SellOrdersMatchAtEqualPrices) {
 }
 
 TEST(HeapBasedEngineTest, PartialFillOrders) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{15}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{15}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 1);
 
   // Ensure partial fill of the buy order
@@ -104,25 +105,25 @@ TEST(HeapBasedEngineTest, PartialFillOrders) {
 }
 
 TEST(HeapBasedEngineTest, NoMatchOrders) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{40}, Quantity_t{15}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{40}, Quantity_t{15}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 0);
 
   // Ensure no trades executed when there's no match
 }
 
 TEST(HeapBasedEngineTest, SamePriceDifferentTime) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{10}));
-  engine.AddOrder(SellOrder(ID_t{3}, Price_t{30}, Quantity_t{15}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{10}));
+  engine->AddOrder(SellOrder(ID_t{3}, Price_t{30}, Quantity_t{15}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 2);
 
   // Ensure trades are executed based on time priority at the same price
@@ -136,21 +137,21 @@ TEST(HeapBasedEngineTest, SamePriceDifferentTime) {
 }
 
 TEST(HeapBasedEngineTest, EmptyOrderBook) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 0);
 
   // Ensure no trades are executed when the order book is empty
 }
 
 TEST(HeapBasedEngineTest, SingleOrderPartialFill) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{30}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{30}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 1);
 
   // Ensure partial fill of the sell order
@@ -160,13 +161,13 @@ TEST(HeapBasedEngineTest, SingleOrderPartialFill) {
 }
 
 TEST(HeapBasedEngineTest, OrderBookWithSamePriceDifferentType) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{30}));
-  engine.AddOrder(BuyOrder(ID_t{3}, Price_t{30}, Quantity_t{10}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{30}));
+  engine->AddOrder(BuyOrder(ID_t{3}, Price_t{30}, Quantity_t{10}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 2);
 
   // Ensure trades are executed correctly with orders of the same price but
@@ -181,12 +182,12 @@ TEST(HeapBasedEngineTest, OrderBookWithSamePriceDifferentType) {
 }
 
 TEST(HeapBasedEngineTest, SingleOrderFullFill) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{20}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 1);
 
   // Ensure full fill of the buy order
@@ -196,13 +197,13 @@ TEST(HeapBasedEngineTest, SingleOrderFullFill) {
 }
 
 TEST(HeapBasedEngineTest, MultipleOrdersWithSamePrice) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(BuyOrder(ID_t{2}, Price_t{30}, Quantity_t{30}));
-  engine.AddOrder(SellOrder(ID_t{3}, Price_t{30}, Quantity_t{50}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(BuyOrder(ID_t{2}, Price_t{30}, Quantity_t{30}));
+  engine->AddOrder(SellOrder(ID_t{3}, Price_t{30}, Quantity_t{50}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 2);
 
   // Ensure trades are executed correctly with multiple orders at the same price
@@ -216,36 +217,36 @@ TEST(HeapBasedEngineTest, MultipleOrdersWithSamePrice) {
 }
 
 TEST(HeapBasedEngineTest, NoBuyOrders) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(SellOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{40}, Quantity_t{30}));
+  engine->AddOrder(SellOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{40}, Quantity_t{30}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 0);
 
   // Ensure no trades are executed when there are no buy orders
 }
 
 TEST(HeapBasedEngineTest, NoSellOrders) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(BuyOrder(ID_t{2}, Price_t{40}, Quantity_t{30}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(BuyOrder(ID_t{2}, Price_t{40}, Quantity_t{30}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 0);
 
   // Ensure no trades are executed when there are no sell orders
 }
 
 TEST(HeapBasedEngineTest, MatchingWithDifferentQuantity) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{15}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{15}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 1);
 
   // Ensure partial fill of the buy order due to different quantities
@@ -255,13 +256,13 @@ TEST(HeapBasedEngineTest, MatchingWithDifferentQuantity) {
 }
 
 TEST(HeapBasedEngineTest, MatchingWithMultipleTrades) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(BuyOrder(ID_t{2}, Price_t{30}, Quantity_t{30}));
-  engine.AddOrder(SellOrder(ID_t{3}, Price_t{30}, Quantity_t{50}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(BuyOrder(ID_t{2}, Price_t{30}, Quantity_t{30}));
+  engine->AddOrder(SellOrder(ID_t{3}, Price_t{30}, Quantity_t{50}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 2);
 
   // Ensure multiple trades are executed with different buy orders
@@ -275,24 +276,24 @@ TEST(HeapBasedEngineTest, MatchingWithMultipleTrades) {
 }
 
 TEST(HeapBasedEngineTest, NoMatchingOrders) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{40}, Quantity_t{30}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{40}, Quantity_t{30}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 0);
 
   // Ensure no trades are executed when there are no matching orders
 }
 
 TEST(HeapBasedEngineTest, MatchingWithSameQuantity) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{20}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{20}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 1);
 
   // Ensure full fill of the buy order with matching sell order
@@ -302,33 +303,33 @@ TEST(HeapBasedEngineTest, MatchingWithSameQuantity) {
 }
 
 TEST(HeapBasedEngineTest, NoBuyOrSellOrders) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 0);
 
   // Ensure no trades are executed when there are no buy or sell orders
 }
 
 TEST(HeapBasedEngineTest, SingleOrderWithZeroQuantity) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{0}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{0}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 0);
 
   // Ensure no trades are executed when an order has zero quantity
 }
 
 TEST(HeapBasedEngineTest, LargeQuantityOrders) {
-  HeapBasedEngine engine;
+  auto engine = std::make_unique<HeapBasedEngine>();
 
   // Add a large quantity buy order and sell order
-  engine.AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{10000}));
-  engine.AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{10000}));
+  engine->AddOrder(BuyOrder(ID_t{1}, Price_t{30}, Quantity_t{10000}));
+  engine->AddOrder(SellOrder(ID_t{2}, Price_t{30}, Quantity_t{10000}));
 
-  auto trade_results = engine.Execute();
+  auto trade_results = engine->Execute();
   EXPECT_EQ(trade_results.size(), 1);
 
   // Ensure full fill of the buy order with matching sell order
