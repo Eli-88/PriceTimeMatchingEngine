@@ -20,7 +20,6 @@ class Engine {
 
  public:
   Engine(EngineOptions options = {.MaxOrderLimit = 1 << 18});
-  virtual ~Engine() = default;
 
   Engine(const Engine&) = delete;
   Engine& operator=(const Engine&) = delete;
