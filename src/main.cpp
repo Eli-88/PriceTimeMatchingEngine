@@ -41,8 +41,7 @@ int main(int, char**) {
   PinCurrentThreadToCore();
 
   Mmap<uint8_t> allocated_memory(sizeof(HeapBasedEngine));
-  HeapBasedEngine* engine =
-      reinterpret_cast<HeapBasedEngine*>(allocated_memory.Address());
+  HeapBasedEngine* engine = new (allocated_memory.Address()) HeapBasedEngine();
 
   TradeObserver trade_observer("127.0.0.1", 8765);
 
